@@ -94,6 +94,9 @@ class Framefilter():
     def testbench(v4l_cam=0):
         record = cv2.VideoCapture(0)
         record.set(cv2.CAP_PROP_FPS, 60)
+        # record.set(cv2.CV_CAP_PROP_FRAME_WIDTH,320.0)
+        # record.set(cv2.CV_CAP_PROP_FRAME_HEIGHT,240.0)
+
         #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++
         while(1):
             ret, frame_input = record.read()
@@ -115,7 +118,7 @@ class Framefilter():
                         cv2.LINE_AA)
 
             Framefilter.display_frame(frame_concat)
-    
+
             k = cv2.waitKey(30) & 0xff
             if k == 27:
                 break
