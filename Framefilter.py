@@ -41,17 +41,34 @@ class Framefilter():
     #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @staticmethod
     def signature_histogram_generation(frame_input):
-        histogram = np.zeros((frame_input.shape))
+        # frame_output = np.zeros((frame_input.shape))
+        histogram = np.zeros(frame_input.shape[0])
+
         for i, line in enumerate(frame_input[:,]):
             white_pixel_count = np.sum(line)
-            white_pixel_count = int(white_pixel_count)//32
+            histogram[i] = int(white_pixel_count)//32
 
-            if white_pixel_count >= frame_input.shape[1]:
-                white_pixel_count = frame_input.shape[1]
+            # if histogram[i] >= frame_input.shape[1]:
+            #     histogram[i] = frame_input.shape[1]
 
-            histogram[i,:white_pixel_count] = np.ones((white_pixel_count))
+            # frame_output[i,:int(histogram[i])] = np.ones(int(histogram[i]))
 
         return histogram
+
+    # ===========================================================
+    #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @staticmethod
+    def plot_line(line_input, frame_output_shape):
+        frame_output = np.zeros(frame_output_shape)
+        #print(frame_output_shape)
+        for i, value in enumerate(line_input):
+            value = int(value)
+            if value >= frame_output_shape[1]:
+                value = frame_output_shape[1]
+            #print(int(value))
+            frame_output[i,:int(value)] = np.ones(int(value))
+
+        return frame_output
 
     # ===========================================================
     #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -88,14 +105,21 @@ class Framefilter():
         frame_output = np.concatenate((frame_input_a, frame_input_b), axis=axis)
         return frame_output
 
+    # ===========================================================
+    #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @staticmethod
+    def crosscorr_line(line_input_a, line_input_b):
+        line_output = np.correlate(line_input_a, line_input_b)
+        return line_output
+
     # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
     #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @staticmethod
     def testbench(v4l_cam=0):
         record = cv2.VideoCapture(0)
-        record.set(cv2.CAP_PROP_FPS, 60)
-        # record.set(cv2.CV_CAP_PROP_FRAME_WIDTH,320.0)
-        # record.set(cv2.CV_CAP_PROP_FRAME_HEIGHT,240.0)
+        record.set(cv2.CAP_PROP_FPS, 10)
+        record.set(cv2.CAP_PROP_FRAME_WIDTH,320.0)
+        record.set(cv2.CAP_PROP_FRAME_HEIGHT,240.0)
 
         #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++
         while(1):
@@ -104,7 +128,8 @@ class Framefilter():
 
             frame_gray = Framefilter.color_drop(frame_input)
             frame_edge = Framefilter.horizontal_edges_extraction(frame_gray)
-            frame_histogram = Framefilter.signature_histogram_generation(frame_edge)
+            histogram = Framefilter.signature_histogram_generation(frame_edge)
+            frame_histogram = Framefilter.plot_line(histogram, frame_gray.shape) 
             frame_concat = Framefilter.concat_frame(frame_edge, frame_histogram, axis=1)
  
             font = cv2.FONT_HERSHEY_SIMPLEX 
