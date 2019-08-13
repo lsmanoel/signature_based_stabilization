@@ -45,13 +45,8 @@ class Framefilter():
         histogram = np.zeros(frame_input.shape[0])
 
         for i, line in enumerate(frame_input[:,]):
-            white_pixel_count = np.sum(line)
-            histogram[i] = int(white_pixel_count)//32
-
-            # if histogram[i] >= frame_input.shape[1]:
-            #     histogram[i] = frame_input.shape[1]
-
-            # frame_output[i,:int(histogram[i])] = np.ones(int(histogram[i]))
+            line_energy = np.sum(line)**2
+            histogram[i] = int(line_energy/(4096**2))
 
         return histogram
 
@@ -115,15 +110,17 @@ class Framefilter():
     # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
     #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @staticmethod
-    def testbench(v4l_cam=0):
-        record = cv2.VideoCapture(0)
-        record.set(cv2.CAP_PROP_FPS, 10)
+    def testbench(video_source=0):
+        record = cv2.VideoCapture(video_source)
+        # record.set(cv2.CAP_PROP_FPS, 10)
         record.set(cv2.CAP_PROP_FRAME_WIDTH,320.0)
         record.set(cv2.CAP_PROP_FRAME_HEIGHT,240.0)
 
         #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++
         while(1):
             ret, frame_input = record.read()
+            frame_input = cv2.resize(frame_input, (320, 240), interpolation = cv2.INTER_AREA)
+
             fps = record.get(cv2.CAP_PROP_FPS)
 
             frame_gray = Framefilter.color_drop(frame_input)
@@ -137,7 +134,7 @@ class Framefilter():
                         str(fps),
                         (10,50), 
                         font, 
-                        1,
+                        0.5,
                         (255,255,255),
                         2,
                         cv2.LINE_AA)
@@ -155,4 +152,6 @@ class Framefilter():
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-Framefilter.testbench()
+#Framefilter.testbench(video_source="./dataset/drone_1.mp4")
+Framefilter.testbench(video_source="./dataset/driver_3.mp4")
+#Framefilter.testbench(video_source=0)
