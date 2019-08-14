@@ -146,7 +146,7 @@ class Framefilter():
                         2,
                         cv2.LINE_AA)
 
-            Framefilter.display_frame(frame_concat)
+            #Framefilter.display_frame(frame_concat)
             Framefilter.print_frame_mean(frame_concat)
 
             k = cv2.waitKey(30) & 0xff
