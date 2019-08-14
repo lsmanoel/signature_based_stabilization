@@ -147,6 +147,7 @@ class Framefilter():
                         cv2.LINE_AA)
 
             Framefilter.display_frame(frame_concat)
+            Framefilter.print_frame_mean(frame_concat)
 
             k = cv2.waitKey(30) & 0xff
             if k == 27:
