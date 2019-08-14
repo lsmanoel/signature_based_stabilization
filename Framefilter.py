@@ -96,6 +96,13 @@ class Framefilter():
     # ===========================================================
     #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @staticmethod
+    def print_frame_mean(frame_input):
+        value = np.mean(frame_input)
+        print(value) 
+
+    # ===========================================================
+    #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @staticmethod
     def concat_frame(frame_input_a, frame_input_b, axis=1):
         frame_output = np.concatenate((frame_input_a, frame_input_b), axis=axis)
         return frame_output
