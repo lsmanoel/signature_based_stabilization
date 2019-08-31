@@ -1,10 +1,19 @@
 import numpy as np
+from matplotlib import pyplot as plt
 import time
 import cv2
 
 class Framefilter():
     def __init__(self):
         pass
+
+    # ===========================================================
+    #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @staticmethod
+    def stereo_bm(frame_L_input, frame_R_input):
+        stereo = cv2.StereoBM_create(numDisparities=16, blockSize=15)
+        disparity = stereo.compute(frame_L_input, frame_R_input)
+        return disparity
 
     # ===========================================================
     #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -75,8 +84,11 @@ class Framefilter():
     # ===========================================================
     #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @staticmethod
-    def shift_filtering(frame_input):
-        frame_output = frame_input
+    def downshift(frame_input, shift=(0, 0), margin=(32, 24)):
+        frame_output = np.zeros((frame_input.shape[0]-margin[0], frame_input.shape[1]-margin[1]))
+
+        frame_output = frame_input[margin[0]//2 + shift[0] : margin[0]//2 + shift[0] + frame_output.shape[0], 
+                                   margin[1]//2 + shift[1] : margin[1]//2 + shift[1] + frame_output.shape[1]]
         return frame_output
 
     # ===========================================================
@@ -120,8 +132,8 @@ class Framefilter():
     def testbench(video_source=0):
         record = cv2.VideoCapture(video_source)
         # record.set(cv2.CAP_PROP_FPS, 10)
-        record.set(cv2.CAP_PROP_FRAME_WIDTH,320.0)
-        record.set(cv2.CAP_PROP_FRAME_HEIGHT,240.0)
+        record.set(cv2.CAP_PROP_FRAME_WIDTH, 320.0)
+        record.set(cv2.CAP_PROP_FRAME_HEIGHT, 240.0)
 
         #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++
         while(1):
@@ -139,10 +151,10 @@ class Framefilter():
             font = cv2.FONT_HERSHEY_SIMPLEX 
             cv2.putText(frame_concat,
                         str(fps),
-                        (10,50), 
+                        (10, 50), 
                         font, 
                         0.5,
-                        (255,255,255),
+                        (255, 255, 255),
                         2,
                         cv2.LINE_AA)
 
@@ -157,9 +169,83 @@ class Framefilter():
         record.release()
         cv2.destroyAllWindows()
 
+    # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @staticmethod
+    def stereovision_testbench(video_source=2):
+        record= cv2.VideoCapture(video_source)
+
+        # record.set(cv2.CAP_PROP_FPS, 10)
+        record.set(cv2.CAP_PROP_FRAME_WIDTH, 320.0)
+        record.set(cv2.CAP_PROP_FRAME_HEIGHT, 240.0)
+
+        print("start")
+        #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        while(1):
+            for i in range(20):
+                print(i)
+                ret_L, frame_L_input = record.read()
+
+            frame_L_input = cv2.resize(frame_L_input, (320, 240), interpolation = cv2.INTER_AREA)
+            frame_L_gray = Framefilter.color_drop(frame_L_input)
+
+            plt.imshow(frame_L_gray, 'gray')
+            plt.show()
+
+
+            for i in range(20):
+                print(i)
+                ret_R, frame_R_input = record.read()
+
+
+
+
+            frame_R_input = cv2.resize(frame_R_input, (320, 240), interpolation = cv2.INTER_AREA)
+            frame_R_gray = Framefilter.color_drop(frame_R_input)
+
+            frame_concat = Framefilter.concat_frame(frame_L_gray, frame_R_gray, axis=1)
+            plt.imshow(frame_concat, 'gray')
+            plt.show()
+
+            frame_disparity = Framefilter.stereo_bm(frame_L_gray, frame_R_gray)
+
+            fig = plt.figure(figsize=(11,22))
+            #===============================================================================  
+            ax1 = fig.add_subplot(2, 1, 1)
+            ax1.imshow(frame_concat, 'gray')
+            ax1.grid(False)
+            plt.xticks([])
+            plt.yticks([])
+            #===============================================================================  
+            ax2 = fig.add_subplot(2, 1, 2)
+            ax2.imshow(frame_disparity, 'gray')
+            ax2.grid(False)
+            plt.xticks([])
+            plt.yticks([])
+            #===============================================================================  
+            fig.subplots_adjust(wspace=0, hspace=0)
+
+            plt.show()
+
+            # ----------------------------------------------------------------------------------------------------------
+            # Esc -> EXIT while
+            # print("standby")
+            # while 1:
+            #   k = cv2.waitKey(1) & 0xff
+            #   if k ==13 or k==27:
+            #     break
+
+            # if k == 27:
+            #     break
+            # ----------------------------------------------------------------------------------------------------------
+
+        #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+        record.release()
+        cv2.destroyAllWindows()
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 #Framefilter.testbench(video_source="./dataset/drone_1.mp4")
 #Framefilter.testbench(video_source="./dataset/driver_3.mp4")
-Framefilter.testbench(video_source=2)
+# Framefilter.testbench(video_source=2)
+Framefilter.stereovision_testbench()
